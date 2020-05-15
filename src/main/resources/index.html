@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script th:src="@{/js/jquery.min.js}"></script>
+</head>
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal"
+            aria-hidden="true" >&times;</button>
+    <h4 class="modal-title" id="myModalLabel">导入文件1</h4>
+</div>
+
+<div class="modal-body row">
+    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+    <form>
+        <div class="fallback">
+            <input name="file" type="file" id="file_id" />
+        </div>
+        <input type="button"  value="上传" class="btn_save" onclick="toProgress()"/>
+        <input type="button"  value="取消" class="btn_save" onclick="toCancel()"/>
+    </form>
+</div>
+
+<div class="modal-footer" id="myModal_add_progressBar_Module">
+    <label class='col-sm-2 control-label'>上传进度：</label>
+    <div class='col-sm-10'>
+        <div class="progress">
+            <div class="progress-bar" id="myModal_add_progressBar" role="progressbar" aria-valuemin="0"
+                 aria-valuemax="100" aria-valuenow="0" style="width:0;">
+            </div>
+        </div>
+        <span id="percentage"></span><span id="time"></span>
+    </div>
+    <div id="son"></div>
+</div>
+</html>
+
+<script type="text/javascript">
+    var timer_is_on = 1;
+    var timer ;
+    function toCancel() {
+        timer_is_on = 0;
+        clearInterval(timer);
+    }
+    function toProgress() {
+        var formData = new FormData();
+        var file = $("#file_id");
+        formData.append('file', file[0].files[0]);
+        // 写入数据
+        $.ajax({
+            url: "/user/user_toImport",
+            type: 'POST',
+            Accept: 'text/html;charset=UTF-8',
+            cache: false,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (msg) {
+
+            },
+        });
+
+        /*** 进度条的显示  */
+        window.setTimeout(function () {
+            if (timer_is_on == 1){
+                timer = window.setInterval(function () {
+                    $.ajax({
+                        type: 'post',
+                        dataType: 'json',
+                        url: "/user/user_toProress",
+                        success: function (data) {
+                            $("#myModal_add_progressBar").css("width", data.percent + "%").text(data.percent + "%");
+                            if (data.percent == "100") {
+                                window.clearInterval(timer);
+                            }
+                        },
+                    });
+                }, 800);
+            }
+        }, 800);
+    }
+</script>
